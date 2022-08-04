@@ -1,0 +1,55 @@
+module Horn_32(input  clk,rst,
+               input [31:0]  cn,        // c0,c1,c2,c3,c4,c5,c6,
+               //input [31:0] array c[6:0],
+               input [31:0] load_data,
+               //input [31:0] z0,
+               output wire [31:0] out);
+        
+        reg [31:0] x, z_out, count;
+        reg [31:0] state,nxt_state;       
+        wire [31:0] sel0, out_mx;
+        parameter [1:0] s0 = 4'd0, s1 = 4'd1, s2 = 4'd2, s3 = 4'd3;   //4 states
+        
+        
+        
+        //Mux21 m(clk,sel0,cn,out,out_mx);
+
+        
+        always @(posedge clk or negedge rst) begin
+                if (rst == 1'b0) begin
+                    state <= s0;
+                end
+                else if (clk == 1'b1) begin
+                    state <= nxt_state;
+               end
+         end
+                   
+         always @(state, load_data) begin
+                  z_out = 1'b0;
+                  nxt_state = state;
+                  
+                  case(state) 
+                        s0: 
+                          if (load_data == 1'b1)
+                              state <= s1;
+                        s1: begin
+                           if (load_data == 1'b1)
+                                nxt_state = s2;
+                           else
+                                nxt_state = s0;
+                        end
+                        s2: begin
+                            if (load_data == 1'b1)
+                                nxt_state = s3;
+                            else
+                                nxt_state = s0;
+                        end
+                        s3: begin
+                            z_out = 1'b1;
+                            if (load_data == 1'b0)
+                                nxt_state = s0;
+                            else
+                                nxt_state =s1; 
+                     end
+                   endcase
+          end
